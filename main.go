@@ -13,6 +13,10 @@ type Box struct {
 	width, height int
 }
 
+type Rhombus struct {
+	x, y, width, height int
+}
+
 func (box *Box) draw(canvas *svg.SVG) {
 	x := box.x - box.width/2
 	canvas.Rect(x, box.y, box.width, box.height)
@@ -21,6 +25,26 @@ func (box *Box) draw(canvas *svg.SVG) {
 func (box *Box) position(x, y int) {
 	box.x += x
 	box.y += y
+}
+
+func (rhombus *Rhombus) draw(canvas *svg.SVG) {
+	bottomY := rhombus.y + rhombus.height
+	leftX := rhombus.x - rhombus.width/2
+	rightX := rhombus.x + rhombus.width/2
+	middleY := rhombus.y + rhombus.height/2
+	canvas.Polygon([]int{rhombus.x, rightX, rhombus.x, leftX}, []int{rhombus.y, middleY, bottomY, middleY})
+}
+
+func (rhombus *Rhombus) position(x, y int) {
+	rhombus.x += x
+	rhombus.y += y
+}
+func (rhoumbus *Rhombus) top() (int, int) {
+	return rhoumbus.x, rhoumbus.y
+}
+
+func (roumbus *Rhombus) size() (int, int) {
+	return roumbus.width, roumbus.height
 }
 
 func (block *Block) position(x, y int) {
@@ -64,8 +88,8 @@ func (box *Box) size() (int, int) {
 }
 
 func main() {
-	width := 1000
-	height := 1000
+	width := 2000
+	height := 2000
 	canvas := svg.New(os.Stdout)
 	canvas.Start(width, height)
 	//canvas.Circle(width/2, height/2, 100)
@@ -82,8 +106,14 @@ func main() {
 		width:  300,
 		height: 209,
 	}
+	r := Rhombus{
+		x:      0,
+		y:      600,
+		width:  100,
+		height: 200,
+	}
 	block := Block{
-		children: []Figure{&box, &box2},
+		children: []Figure{&box, &box2, &r},
 	}
 	block.position(250, 250)
 	block.draw(canvas)
