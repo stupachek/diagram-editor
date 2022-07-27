@@ -18,10 +18,22 @@ func (box *Box) draw(canvas *svg.SVG) {
 	canvas.Rect(x, box.y, box.width, box.height)
 }
 
+func (box *Box) position(x, y int) {
+	box.x += x
+	box.y += y
+}
+
+func (block *Block) position(x, y int) {
+	for _, child := range block.children {
+		child.position(x, y)
+	}
+}
+
 type Figure interface {
 	draw(*svg.SVG)
 	top() (int, int)
 	size() (int, int)
+	position(x, y int)
 }
 
 type Block struct {
@@ -52,27 +64,28 @@ func (box *Box) size() (int, int) {
 }
 
 func main() {
-	width := 500
-	height := 500
+	width := 1000
+	height := 1000
 	canvas := svg.New(os.Stdout)
 	canvas.Start(width, height)
 	//canvas.Circle(width/2, height/2, 100)
 	//canvas.Text(width/2, height/2, "Hello, SVG", "text-anchor:middle;font-size:30px;fill:white")
 	box := Box{
-		x:      250,
-		y:      250,
-		width:  100,
-		height: 200,
+		x:      0,
+		y:      0,
+		width:  200,
+		height: 100,
 	}
 	box2 := Box{
-		x:      220,
-		y:      120,
+		x:      0,
+		y:      300,
 		width:  300,
 		height: 209,
 	}
 	block := Block{
 		children: []Figure{&box, &box2},
 	}
+	block.position(250, 250)
 	block.draw(canvas)
 	canvas.End()
 }
