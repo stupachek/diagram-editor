@@ -87,6 +87,33 @@ func (box *Box) size() (int, int) {
 	return box.width, box.height
 }
 
+type If struct {
+	cond        Rhombus
+	left, right Block
+}
+
+func (ifStmt *If) draw(canvas *svg.SVG) {
+	ifStmt.left.draw(canvas)
+	ifStmt.right.draw(canvas)
+	ifStmt.cond.draw(canvas)
+
+}
+func (ifStmt *If) top() (int, int) {
+	//return block.x, block.y
+	panic("TODO")
+}
+
+func (ifStmt *If) size() (int, int) {
+	//return block.width, block.height
+	panic("TODO")
+}
+
+func (ifStmt *If) position(x int, y int) {
+	ifStmt.cond.position(x, y)
+	ifStmt.left.position(x, y)
+	ifStmt.right.position(x, y)
+}
+
 func main() {
 	width := 2000
 	height := 2000
@@ -112,10 +139,18 @@ func main() {
 		width:  100,
 		height: 200,
 	}
-	block := Block{
-		children: []Figure{&box, &box2, &r},
+	block1 := Block{
+		children: []Figure{&box},
 	}
-	block.position(250, 250)
-	block.draw(canvas)
+	block2 := Block{
+		children: []Figure{&box2},
+	}
+	ifStmt := If{
+		cond:  r,
+		left:  block1,
+		right: block2,
+	}
+	ifStmt.position(250, 250)
+	ifStmt.draw(canvas)
 	canvas.End()
 }
