@@ -7,6 +7,8 @@ import (
 )
 
 const unit int = 100
+const blockSpacing int = unit
+const blockSpacingWidth = unit
 
 type Box struct {
 	x, y          int
@@ -51,6 +53,8 @@ func (block *Block) position(x, y int) {
 	for _, child := range block.children {
 		child.position(x, y)
 	}
+	block.x += x
+	block.y += y
 }
 
 type Figure interface {
@@ -62,16 +66,26 @@ type Figure interface {
 
 type Block struct {
 	children []Figure
+	x, y     int
 }
 
 func (block *Block) top() (int, int) {
-	//return block.x, block.y
-	panic("TODO")
+	return block.x, block.y
 }
 
 func (block *Block) size() (int, int) {
-	//return block.width, block.height
-	panic("TODO")
+	width, height := 0, 0
+	for _, child := range block.children {
+		w, h := child.size()
+		height += h + blockSpacing
+		if w > width {
+			width = w
+		}
+	}
+	if len(block.children) != 0 {
+		height -= blockSpacing
+	}
+	return width, height
 }
 func (block *Block) draw(canvas *svg.SVG) {
 	for _, child := range block.children {
@@ -99,13 +113,22 @@ func (ifStmt *If) draw(canvas *svg.SVG) {
 
 }
 func (ifStmt *If) top() (int, int) {
-	//return block.x, block.y
-	panic("TODO")
+	return ifStmt.cond.top()
 }
 
 func (ifStmt *If) size() (int, int) {
-	//return block.width, block.height
-	panic("TODO")
+	_, rhombusHeigth := ifStmt.cond.size()
+	leftWidth, leftHeigth := ifStmt.left.size()
+	rightWidth, rightHeigth := ifStmt.right.size()
+	height := rhombusHeigth + blockSpacing
+	if leftHeigth > rightHeigth {
+		height += leftHeigth
+	} else {
+		height += rightHeigth
+	}
+	width := leftWidth + rightWidth + 2*blockSpacingWidth
+	return width, height
+
 }
 
 func (ifStmt *If) position(x int, y int) {
@@ -121,36 +144,29 @@ func main() {
 	canvas.Start(width, height)
 	//canvas.Circle(width/2, height/2, 100)
 	//canvas.Text(width/2, height/2, "Hello, SVG", "text-anchor:middle;font-size:30px;fill:white")
-	box := Box{
-		x:      0,
-		y:      0,
-		width:  200,
-		height: 100,
+	astBlock := AstBlock{
+		children: []AstElement{
+			&AstBox{},
+			&AstIf{
+				left: AstBlock{
+					children: []AstElement{
+						&AstBox{},
+						&AstBox{},
+					},
+				},
+				right: AstBlock{
+					children: []AstElement{
+						&AstBox{},
+						&AstBox{},
+						&AstBox{},
+					},
+				},
+			},
+			&AstBox{},
+			&AstBox{},
+		},
 	}
-	box2 := Box{
-		x:      0,
-		y:      300,
-		width:  300,
-		height: 209,
-	}
-	r := Rhombus{
-		x:      0,
-		y:      600,
-		width:  100,
-		height: 200,
-	}
-	block1 := Block{
-		children: []Figure{&box},
-	}
-	block2 := Block{
-		children: []Figure{&box2},
-	}
-	ifStmt := If{
-		cond:  r,
-		left:  block1,
-		right: block2,
-	}
-	ifStmt.position(250, 250)
-	ifStmt.draw(canvas)
+	b := astBlock.toFigure(500, 250)
+	b.draw(canvas)
 	canvas.End()
 }
