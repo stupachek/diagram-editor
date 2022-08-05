@@ -9,6 +9,7 @@ import (
 const unit int = 100
 const blockSpacing int = unit
 const blockSpacingWidth = unit
+const lineStyle = `stroke="black"`
 
 type Box struct {
 	x, y          int
@@ -28,13 +29,23 @@ func (box *Box) position(x, y int) {
 	box.x += x
 	box.y += y
 }
+func (box *Box) connectTo(x, y int, canvas *svg.SVG) {
+	bottom := box.y + box.height
+	canvas.Line(box.x, bottom, x, y, lineStyle)
+}
+func (box *Box) drawLines(canvas *svg.SVG) {}
 
 func (rhombus *Rhombus) draw(canvas *svg.SVG) {
 	bottomY := rhombus.y + rhombus.height
-	leftX := rhombus.x - rhombus.width/2
-	rightX := rhombus.x + rhombus.width/2
-	middleY := rhombus.y + rhombus.height/2
+	leftX, middleY := rhombus.left()
+	rightX, _ := rhombus.right()
 	canvas.Polygon([]int{rhombus.x, rightX, rhombus.x, leftX}, []int{rhombus.y, middleY, bottomY, middleY})
+}
+func (rhombus *Rhombus) left() (x, y int) {
+	return rhombus.x - rhombus.width/2, rhombus.y + rhombus.height/2
+}
+func (rhombus *Rhombus) right() (x, y int) {
+	return rhombus.x + rhombus.width/2, rhombus.y + rhombus.height/2
 }
 
 func (rhombus *Rhombus) position(x, y int) {
@@ -62,6 +73,8 @@ type Figure interface {
 	top() (int, int)
 	size() (int, int)
 	position(x, y int)
+	connectTo(x, y int, canvas *svg.SVG)
+	drawLines(canvas *svg.SVG)
 }
 
 type Block struct {
@@ -93,6 +106,21 @@ func (block *Block) draw(canvas *svg.SVG) {
 	}
 }
 
+func (block *Block) bottom() (int, int) {
+	topX, topY := block.top()
+	_, h := block.size()
+	return topX, topY + h
+}
+
+func (block *Block) drawLines(canvas *svg.SVG) {
+	for _, child := range block.children {
+		child.drawLines(canvas)
+	}
+	for i := 0; i < len(block.children)-1; i++ {
+		x, y := block.children[i+1].top()
+		block.children[i].connectTo(x, y, canvas)
+	}
+}
 func (box *Box) top() (int, int) {
 	return box.x, box.y
 }
@@ -131,10 +159,39 @@ func (ifStmt *If) size() (int, int) {
 
 }
 
+func (ifStmt *If) drawLines(canvas *svg.SVG) {
+	ifRX, ifRY := ifStmt.cond.right()
+	ifLX, ifLY := ifStmt.cond.left()
+	leftX, leftY := ifStmt.left.top()
+	rightX, rightY := ifStmt.right.top()
+	canvas.Line(ifRX, ifRY, rightX, ifRY, lineStyle)
+	canvas.Line(ifLX, ifLY, leftX, ifLY, lineStyle)
+	canvas.Line(rightX, ifRY, rightX, rightY, lineStyle)
+	canvas.Line(leftX, ifLY, leftX, leftY, lineStyle)
+	ifStmt.left.drawLines(canvas)
+	ifStmt.right.drawLines(canvas)
+}
+
 func (ifStmt *If) position(x int, y int) {
 	ifStmt.cond.position(x, y)
 	ifStmt.left.position(x, y)
 	ifStmt.right.position(x, y)
+}
+
+func (ifStmt *If) connectTo(x, y int, canvas *svg.SVG) {
+	leftX, leftY := ifStmt.left.bottom()
+	rightX, rightY := ifStmt.right.bottom()
+	middleY := 0
+	if leftY > rightY {
+		middleY = (leftY + y) / 2
+	} else {
+		middleY = (rightY + y) / 2
+	}
+	canvas.Line(leftX, leftY, leftX, middleY, lineStyle)
+	canvas.Line(rightX, rightY, rightX, middleY, lineStyle)
+	canvas.Line(leftX, middleY, rightX, middleY, lineStyle)
+	ifX, _ := ifStmt.top()
+	canvas.Line(ifX, middleY, x, y, lineStyle)
 }
 
 func main() {
@@ -159,14 +216,26 @@ func main() {
 						&AstBox{},
 						&AstBox{},
 						&AstBox{},
+						&AstIf{
+							left: AstBlock{
+								children: []AstElement{
+									&AstBox{},
+								},
+							},
+							right: AstBlock{},
+						},
+						&AstBox{},
 					},
 				},
 			},
+
 			&AstBox{},
 			&AstBox{},
 		},
 	}
 	b := astBlock.toFigure(500, 250)
+
 	b.draw(canvas)
+	b.drawLines(canvas)
 	canvas.End()
 }
