@@ -48,6 +48,7 @@ func (astIf *AstIf) toFigure(x, y int) Figure {
 
 func (astBlock *AstBlock) toFigure(x, y int) Block {
 	children := []Figure{}
+	yStart := y
 	for _, child := range astBlock.children {
 		childFigure := child.toFigure(x, y)
 		children = append(children, childFigure)
@@ -55,6 +56,6 @@ func (astBlock *AstBlock) toFigure(x, y int) Block {
 		y += h + blockSpacing
 	}
 	return Block{
-		children, x, y,
+		children: children, x: x, y: yStart,
 	}
 }

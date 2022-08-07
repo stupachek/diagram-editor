@@ -1,9 +1,7 @@
 package main
 
 import (
-	"os"
-
-	svg "github.com/ajstarks/svgo"
+	"github.com/fogleman/gg"
 )
 
 const unit int = 100
@@ -20,26 +18,34 @@ type Rhombus struct {
 	x, y, width, height int
 }
 
-func (box *Box) draw(canvas *svg.SVG) {
+func (box *Box) draw(canvas *gg.Context) {
 	x := box.x - box.width/2
-	canvas.Rect(x, box.y, box.width, box.height)
+	canvas.DrawRectangle(float64(x), float64(box.y), float64(box.width), float64(box.height))
+	canvas.Stroke()
 }
 
 func (box *Box) position(x, y int) {
 	box.x += x
 	box.y += y
 }
-func (box *Box) connectTo(x, y int, canvas *svg.SVG) {
+func (box *Box) connectTo(x, y int, canvas *gg.Context) {
 	bottom := box.y + box.height
-	canvas.Line(box.x, bottom, x, y, lineStyle)
+	canvas.DrawLine(float64(box.x), float64(bottom), float64(x), float64(y))
+	canvas.Stroke()
 }
-func (box *Box) drawLines(canvas *svg.SVG) {}
+func (box *Box) drawLines(canvas *gg.Context) {}
 
-func (rhombus *Rhombus) draw(canvas *svg.SVG) {
+func (rhombus *Rhombus) draw(canvas *gg.Context) {
 	bottomY := rhombus.y + rhombus.height
 	leftX, middleY := rhombus.left()
 	rightX, _ := rhombus.right()
-	canvas.Polygon([]int{rhombus.x, rightX, rhombus.x, leftX}, []int{rhombus.y, middleY, bottomY, middleY})
+	canvas.MoveTo(float64(rhombus.x), float64(rhombus.y))
+	canvas.LineTo(float64(rightX), float64(middleY))
+	canvas.LineTo(float64(rhombus.x), float64(bottomY))
+	canvas.LineTo(float64(leftX), float64(middleY))
+	canvas.LineTo(float64(rhombus.x), float64(rhombus.y))
+
+	canvas.Stroke()
 }
 func (rhombus *Rhombus) left() (x, y int) {
 	return rhombus.x - rhombus.width/2, rhombus.y + rhombus.height/2
@@ -69,12 +75,12 @@ func (block *Block) position(x, y int) {
 }
 
 type Figure interface {
-	draw(*svg.SVG)
+	draw(*gg.Context)
 	top() (int, int)
 	size() (int, int)
 	position(x, y int)
-	connectTo(x, y int, canvas *svg.SVG)
-	drawLines(canvas *svg.SVG)
+	connectTo(x, y int, canvas *gg.Context)
+	drawLines(canvas *gg.Context)
 }
 
 type Block struct {
@@ -100,7 +106,7 @@ func (block *Block) size() (int, int) {
 	}
 	return width, height
 }
-func (block *Block) draw(canvas *svg.SVG) {
+func (block *Block) draw(canvas *gg.Context) {
 	for _, child := range block.children {
 		child.draw(canvas)
 	}
@@ -112,7 +118,7 @@ func (block *Block) bottom() (int, int) {
 	return topX, topY + h
 }
 
-func (block *Block) drawLines(canvas *svg.SVG) {
+func (block *Block) drawLines(canvas *gg.Context) {
 	for _, child := range block.children {
 		child.drawLines(canvas)
 	}
@@ -134,7 +140,7 @@ type If struct {
 	left, right Block
 }
 
-func (ifStmt *If) draw(canvas *svg.SVG) {
+func (ifStmt *If) draw(canvas *gg.Context) {
 	ifStmt.left.draw(canvas)
 	ifStmt.right.draw(canvas)
 	ifStmt.cond.draw(canvas)
@@ -159,15 +165,19 @@ func (ifStmt *If) size() (int, int) {
 
 }
 
-func (ifStmt *If) drawLines(canvas *svg.SVG) {
+func (ifStmt *If) drawLines(canvas *gg.Context) {
 	ifRX, ifRY := ifStmt.cond.right()
 	ifLX, ifLY := ifStmt.cond.left()
 	leftX, leftY := ifStmt.left.top()
 	rightX, rightY := ifStmt.right.top()
-	canvas.Line(ifRX, ifRY, rightX, ifRY, lineStyle)
-	canvas.Line(ifLX, ifLY, leftX, ifLY, lineStyle)
-	canvas.Line(rightX, ifRY, rightX, rightY, lineStyle)
-	canvas.Line(leftX, ifLY, leftX, leftY, lineStyle)
+	canvas.DrawLine(float64(ifRX), float64(ifRY), float64(rightX), float64(ifRY))
+	canvas.Stroke()
+	canvas.DrawLine(float64(ifLX), float64(ifLY), float64(leftX), float64(ifLY))
+	canvas.Stroke()
+	canvas.DrawLine(float64(rightX), float64(ifRY), float64(rightX), float64(rightY))
+	canvas.Stroke()
+	canvas.DrawLine(float64(leftX), float64(ifLY), float64(leftX), float64(leftY))
+	canvas.Stroke()
 	ifStmt.left.drawLines(canvas)
 	ifStmt.right.drawLines(canvas)
 }
@@ -178,7 +188,7 @@ func (ifStmt *If) position(x int, y int) {
 	ifStmt.right.position(x, y)
 }
 
-func (ifStmt *If) connectTo(x, y int, canvas *svg.SVG) {
+func (ifStmt *If) connectTo(x, y int, canvas *gg.Context) {
 	leftX, leftY := ifStmt.left.bottom()
 	rightX, rightY := ifStmt.right.bottom()
 	middleY := 0
@@ -187,20 +197,21 @@ func (ifStmt *If) connectTo(x, y int, canvas *svg.SVG) {
 	} else {
 		middleY = (rightY + y) / 2
 	}
-	canvas.Line(leftX, leftY, leftX, middleY, lineStyle)
-	canvas.Line(rightX, rightY, rightX, middleY, lineStyle)
-	canvas.Line(leftX, middleY, rightX, middleY, lineStyle)
+	canvas.DrawLine(float64(leftX), float64(leftY), float64(leftX), float64(middleY))
+	canvas.Stroke()
+	canvas.DrawLine(float64(rightX), float64(rightY), float64(rightX), float64(middleY))
+	canvas.Stroke()
+	canvas.DrawLine(float64(leftX), float64(middleY), float64(rightX), float64(middleY))
+	canvas.Stroke()
 	ifX, _ := ifStmt.top()
-	canvas.Line(ifX, middleY, x, y, lineStyle)
+	canvas.DrawLine(float64(ifX), float64(middleY), float64(x), float64(y))
+	canvas.Stroke()
 }
 
 func main() {
 	width := 2000
 	height := 2000
-	canvas := svg.New(os.Stdout)
-	canvas.Start(width, height)
-	//canvas.Circle(width/2, height/2, 100)
-	//canvas.Text(width/2, height/2, "Hello, SVG", "text-anchor:middle;font-size:30px;fill:white")
+	canvas := gg.NewContext(width, height)
 	astBlock := AstBlock{
 		children: []AstElement{
 			&AstBox{},
@@ -234,8 +245,9 @@ func main() {
 		},
 	}
 	b := astBlock.toFigure(500, 250)
+	canvas.SetRGB(0, 0, 0)
 
 	b.draw(canvas)
 	b.drawLines(canvas)
-	canvas.End()
+	canvas.SavePNG("out.png")
 }
