@@ -1,27 +1,40 @@
 package main
 
 import (
+	"math"
+
 	"github.com/fogleman/gg"
+	"github.com/goki/freetype/truetype"
+	"golang.org/x/image/font"
+	"golang.org/x/image/font/gofont/goregular"
 )
 
 const unit int = 100
 const blockSpacing int = unit
 const blockSpacingWidth = unit
-const lineStyle = `stroke="black"`
+const textHeight = 30
+const verticalMargins = 30
+const horizontalMargins = 30
+
+var face truetype.IndexableFace
 
 type Box struct {
 	x, y          int
 	width, height int
+	text          string
 }
 
 type Rhombus struct {
 	x, y, width, height int
+	text                string
 }
 
 func (box *Box) draw(canvas *gg.Context) {
 	x := box.x - box.width/2
 	canvas.DrawRectangle(float64(x), float64(box.y), float64(box.width), float64(box.height))
 	canvas.Stroke()
+	middleY := box.height/2 + box.y
+	canvas.DrawStringAnchored(box.text, float64(box.x), float64(middleY), 0.5, 0.35)
 }
 
 func (box *Box) position(x, y int) {
@@ -44,8 +57,9 @@ func (rhombus *Rhombus) draw(canvas *gg.Context) {
 	canvas.LineTo(float64(rhombus.x), float64(bottomY))
 	canvas.LineTo(float64(leftX), float64(middleY))
 	canvas.LineTo(float64(rhombus.x), float64(rhombus.y))
-
 	canvas.Stroke()
+	middleY_2 := rhombus.height/2 + rhombus.y
+	canvas.DrawStringAnchored(rhombus.text, float64(rhombus.x), float64(middleY_2), 0.5, 0.35)
 }
 func (rhombus *Rhombus) left() (x, y int) {
 	return rhombus.x - rhombus.width/2, rhombus.y + rhombus.height/2
@@ -208,45 +222,82 @@ func (ifStmt *If) connectTo(x, y int, canvas *gg.Context) {
 	canvas.Stroke()
 }
 
+func newBox(text string, x, y int) Box {
+	d := &font.Drawer{
+		Face: face,
+	}
+	w := d.MeasureString(text)
+	return Box{
+		x:      x,
+		y:      y,
+		width:  int(w>>6) + horizontalMargins,
+		height: textHeight + verticalMargins,
+		text:   text,
+	}
+}
+
+func newRhombus(text string, x, y int) Rhombus {
+
+	box := newBox(text, x, y)
+	c := math.Sqrt(float64(box.height*box.height)+float64(box.width*box.width)) / 2
+	w_2 := float64(box.width) / 2
+	h_2 := float64(box.height) / 2
+	w := 2 * math.Sqrt(c*c+w_2*w_2)
+	h := 2 * math.Sqrt(c*c+h_2*h_2)
+	return Rhombus{
+		x:      x,
+		y:      y,
+		width:  int(w),
+		height: int(h),
+		text:   text,
+	}
+}
+
 func main() {
 	width := 2000
 	height := 2000
+	font, err := truetype.Parse(goregular.TTF)
+	if err != nil {
+		panic(err)
+	}
+
+	face = truetype.NewFace(font, &truetype.Options{Size: textHeight})
 	canvas := gg.NewContext(width, height)
+	canvas.SetFontFace(face)
 	astBlock := AstBlock{
 		children: []AstElement{
-			&AstBox{},
-			&AstIf{
+			&AstBox{"123"},
+			&AstIf{text: "xuy_zalupa\nqweqe\nqweqe",
 				left: AstBlock{
 					children: []AstElement{
-						&AstBox{},
-						&AstBox{},
+						&AstBox{"*"},
+						&AstBox{"KISS U"},
 					},
 				},
 				right: AstBlock{
 					children: []AstElement{
-						&AstBox{},
-						&AstBox{},
-						&AstBox{},
-						&AstIf{
+						&AstBox{"12312312312321"},
+						&AstBox{"12321321321312312313123"},
+						&AstBox{"QWEQWEQWEQ"},
+						&AstIf{text: "<3",
 							left: AstBlock{
 								children: []AstElement{
-									&AstBox{},
+									&AstBox{"dfghjkl"},
 								},
 							},
 							right: AstBlock{},
 						},
-						&AstBox{},
+						&AstBox{"iop"},
 					},
 				},
 			},
 
-			&AstBox{},
-			&AstBox{},
+			&AstBox{"uio"},
+			&AstBox{"i"},
 		},
 	}
 	b := astBlock.toFigure(500, 250)
 	canvas.SetRGB(0, 0, 0)
-
 	b.draw(canvas)
 	b.drawLines(canvas)
 	canvas.SavePNG("out.png")

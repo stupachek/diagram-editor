@@ -1,10 +1,12 @@
 package main
 
 type AstBox struct {
+	text string
 }
 
 type AstIf struct {
 	left, right AstBlock
+	text        string
 }
 
 type AstBlock struct {
@@ -16,18 +18,15 @@ type AstElement interface {
 }
 
 func (astBox *AstBox) toFigure(x, y int) Figure {
-	return &Box{
-		x:      x,
-		y:      y,
-		width:  2 * unit,
-		height: unit,
-	}
+	newB := newBox(astBox.text, x, y)
+	return &newB
 }
 
 func (astIf *AstIf) toFigure(x, y int) Figure {
+	rhombus := newRhombus(astIf.text, x, y)
 	left := astIf.left.toFigure(0, 0)
 	right := astIf.right.toFigure(0, 0)
-	blockY := y + unit + blockSpacing
+	blockY := y + rhombus.height + blockSpacing
 	widthLeft, _ := left.size()
 	widthRigth, _ := right.size()
 	leftX := x - widthLeft/2 - blockSpacingWidth
@@ -35,12 +34,7 @@ func (astIf *AstIf) toFigure(x, y int) Figure {
 	left.position(leftX, blockY)
 	right.position(rightX, blockY)
 	return &If{
-		cond: Rhombus{
-			x:      x,
-			y:      y,
-			width:  2 * unit,
-			height: unit,
-		},
+		cond:  rhombus,
 		left:  left,
 		right: right,
 	}
