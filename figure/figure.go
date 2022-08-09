@@ -1,4 +1,4 @@
-package main
+package figure
 
 import (
 	"github.com/fogleman/gg"
@@ -274,52 +274,61 @@ func newRhombus(text string, x, y int) Rhombus {
 	}
 }
 
-func main() {
-	width := 2000
-	height := 2000
+func init() {
 	font, err := truetype.Parse(goregular.TTF)
 	if err != nil {
 		panic(err)
 	}
 
 	face = truetype.NewFace(font, &truetype.Options{Size: textHeight})
-	canvas := gg.NewContext(width, height)
-	canvas.SetFontFace(face)
-	astBlock := AstBlock{
-		children: []AstElement{
-			&AstBox{"123"},
-			&AstIf{text: "xuy_zalupa\nqweqe\nqweqe",
-				left: AstBlock{
-					children: []AstElement{
-						&AstBox{"*"},
-						&AstBox{"KISS U"},
-					},
-				},
-				right: AstBlock{
-					children: []AstElement{
-						&AstBox{"12312312312321"},
-						&AstBox{"12321321321312312313123"},
-						&AstBox{"QWEQWEQWEQ"},
-						&AstIf{text: "<3",
-							left: AstBlock{
-								children: []AstElement{
-									&AstBox{"dfghjkl"},
-								},
-							},
-							right: AstBlock{},
-						},
-						&AstBox{"iop"},
-					},
-				},
-			},
-
-			&AstBox{"uio"},
-			&AstBox{"i"},
-		},
-	}
-	b := astBlock.toFigure(500, 250)
-	canvas.SetRGB(0, 0, 0)
-	b.draw(canvas)
-	b.drawLines(canvas)
-	canvas.SavePNG("out.png")
 }
+
+// func main() {
+// 	width := 2000
+// 	height := 2000
+// 	font, err := truetype.Parse(goregular.TTF)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+
+// 	face = truetype.NewFace(font, &truetype.Options{Size: textHeight})
+// 	canvas := gg.NewContext(width, height)
+// 	canvas.SetFontFace(face)
+// 	astBlock := AstBlock{
+// 		children: []AstElement{
+// 			&AstBox{"123"},
+// 			&AstIf{text: "xuy_zalupa\nqweqe\nqweqe",
+// 				left: AstBlock{
+// 					children: []AstElement{
+// 						&AstBox{"*"},
+// 						&AstBox{"KISS U"},
+// 					},
+// 				},
+// 				right: AstBlock{
+// 					children: []AstElement{
+// 						&AstBox{"12312312312321"},
+// 						&AstBox{"12321321321312312313123"},
+// 						&AstBox{"QWEQWEQWEQ"},
+// 						&AstIf{text: "<3",
+// 							left: AstBlock{
+// 								children: []AstElement{
+// 									&AstBox{"dfghjkl"},
+// 								},
+// 							},
+// 							right: AstBlock{},
+// 						},
+// 						&AstBox{"iop"},
+// 					},
+// 				},
+// 			},
+
+// 			&AstBox{"uio"},
+// 			&AstBox{"i"},
+// 		},
+// 	}
+// 	b := astBlock.toFigure(500, 250)
+// 	canvas.SetRGB(0, 0, 0)
+// 	b.draw(canvas)
+// 	b.drawLines(canvas)
+// 	canvas.SavePNG("out.png")
+// }

@@ -1,4 +1,4 @@
-package main
+package figure
 
 type AstBox struct {
 	text string
