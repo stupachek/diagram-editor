@@ -29,14 +29,22 @@ func (astIf *AstIf) toFigure(x, y int) Figure {
 	blockY := y + rhombus.height + blockSpacing
 	widthLeft, _ := left.size()
 	widthRigth, _ := right.size()
-	leftX := x - widthLeft/2 - blockSpacingWidth
-	rightX := x + widthRigth/2 + blockSpacingWidth
+	leftX := x - Max(widthLeft, rhombus.width)/2 - blockSpacingWidth
+	rightX := x + Max(widthRigth, rhombus.width)/2 + blockSpacingWidth
 	left.position(leftX, blockY)
 	right.position(rightX, blockY)
 	return &If{
 		cond:  rhombus,
 		left:  left,
 		right: right,
+	}
+}
+
+func Max(a, b int) int {
+	if a > b {
+		return a
+	} else {
+		return b
 	}
 }
 
