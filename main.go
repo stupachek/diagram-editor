@@ -139,6 +139,7 @@ func (block *Block) drawLines(canvas *gg.Context) {
 	for i := 0; i < len(block.children)-1; i++ {
 		x, y := block.children[i+1].top()
 		block.children[i].connectTo(x, y, canvas)
+		Arrow(x, y, canvas)
 	}
 }
 func (box *Box) top() (int, int) {
@@ -193,7 +194,17 @@ func (ifStmt *If) drawLines(canvas *gg.Context) {
 	canvas.DrawLine(float64(leftX), float64(ifLY), float64(leftX), float64(leftY))
 	canvas.Stroke()
 	ifStmt.left.drawLines(canvas)
+	if !ifStmt.left.IsEmpty() {
+		Arrow(leftX, leftY, canvas)
+	}
+	if !ifStmt.right.IsEmpty() {
+		Arrow(rightX, rightY, canvas)
+	}
 	ifStmt.right.drawLines(canvas)
+}
+
+func (block *Block) IsEmpty() bool {
+	return len(block.children) == 0
 }
 
 func (ifStmt *If) position(x int, y int) {
@@ -234,6 +245,16 @@ func newBox(text string, x, y int) Box {
 		height: textHeight + verticalMargins,
 		text:   text,
 	}
+}
+
+func Arrow(x, y int, canvas *gg.Context) {
+	h := 10
+	w := 15
+	canvas.MoveTo(float64(x-w/2), float64(y-h))
+	canvas.LineTo(float64(x+w/2), float64(y-h))
+	canvas.LineTo(float64(x), float64(y))
+	canvas.LineTo(float64(x-w/2), float64(y-h))
+	canvas.Fill()
 }
 
 func newRhombus(text string, x, y int) Rhombus {
