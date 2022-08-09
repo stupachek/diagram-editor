@@ -1,8 +1,6 @@
 package main
 
 import (
-	"math"
-
 	"github.com/fogleman/gg"
 	"github.com/goki/freetype/truetype"
 	"golang.org/x/image/font"
@@ -234,17 +232,22 @@ func (ifStmt *If) connectTo(x, y int, canvas *gg.Context) {
 }
 
 func newBox(text string, x, y int) Box {
+	w, h := TextSize(text)
+	return Box{
+		x:      x,
+		y:      y,
+		width:  w + horizontalMargins,
+		height: h + verticalMargins,
+		text:   text,
+	}
+}
+
+func TextSize(text string) (width, height int) {
 	d := &font.Drawer{
 		Face: face,
 	}
 	w := d.MeasureString(text)
-	return Box{
-		x:      x,
-		y:      y,
-		width:  int(w>>6) + horizontalMargins,
-		height: textHeight + verticalMargins,
-		text:   text,
-	}
+	return int(w >> 6), textHeight
 }
 
 func Arrow(x, y int, canvas *gg.Context) {
@@ -259,17 +262,14 @@ func Arrow(x, y int, canvas *gg.Context) {
 
 func newRhombus(text string, x, y int) Rhombus {
 
-	box := newBox(text, x, y)
-	c := math.Sqrt(float64(box.height*box.height)+float64(box.width*box.width)) / 2
-	w_2 := float64(box.width) / 2
-	h_2 := float64(box.height) / 2
-	w := 2 * math.Sqrt(c*c+w_2*w_2)
-	h := 2 * math.Sqrt(c*c+h_2*h_2)
+	w, h := TextSize(text)
+	h_rhombus := h * 3
+	w_hrombus := Max((w * h_rhombus / (h_rhombus - h)), h_rhombus)
 	return Rhombus{
 		x:      x,
 		y:      y,
-		width:  int(w),
-		height: int(h),
+		width:  w_hrombus,
+		height: h_rhombus,
 		text:   text,
 	}
 }
