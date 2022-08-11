@@ -173,9 +173,18 @@ func (ifStmt *If) size() (int, int) {
 	} else {
 		height += rightHeigth
 	}
-	width := leftWidth + rightWidth + 2*blockSpacingWidth
+	leftX, _ := ifStmt.left.top()
+	rightX, _ := ifStmt.right.top()
+	width := Abs(leftX-rightX) + leftWidth/2 + rightWidth/2
 	return width, height
 
+}
+
+func Abs(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
 }
 
 func (ifStmt *If) drawLines(canvas *gg.Context) {
@@ -286,9 +295,9 @@ func init() {
 func DrawBlock(block AstBlock, name string) {
 	blockFigure := block.toFigure(0, 0)
 	w, h := blockFigure.size()
-	canvas := gg.NewContext(w, h)
+	canvas := gg.NewContext(2*w, h)
 	canvas.SetFontFace(face)
-	blockFigure.position(w/2, 0)
+	blockFigure.position(w, 0)
 	canvas.SetRGB(0, 0, 0)
 	blockFigure.draw(canvas)
 	blockFigure.drawLines(canvas)
