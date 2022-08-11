@@ -1,16 +1,16 @@
 package figure
 
 type AstBox struct {
-	text string
+	Text string
 }
 
 type AstIf struct {
-	left, right AstBlock
-	text        string
+	Left, Right AstBlock
+	Text        string
 }
 
 type AstBlock struct {
-	children []AstElement
+	Children []AstElement
 }
 
 type AstElement interface {
@@ -18,14 +18,14 @@ type AstElement interface {
 }
 
 func (astBox *AstBox) toFigure(x, y int) Figure {
-	newB := newBox(astBox.text, x, y)
+	newB := newBox(astBox.Text, x, y)
 	return &newB
 }
 
 func (astIf *AstIf) toFigure(x, y int) Figure {
-	rhombus := newRhombus(astIf.text, x, y)
-	left := astIf.left.toFigure(0, 0)
-	right := astIf.right.toFigure(0, 0)
+	rhombus := newRhombus(astIf.Text, x, y)
+	left := astIf.Left.toFigure(0, 0)
+	right := astIf.Right.toFigure(0, 0)
 	blockY := y + rhombus.height + blockSpacing
 	widthLeft, _ := left.size()
 	widthRigth, _ := right.size()
@@ -51,7 +51,7 @@ func Max(a, b int) int {
 func (astBlock *AstBlock) toFigure(x, y int) Block {
 	children := []Figure{}
 	yStart := y
-	for _, child := range astBlock.children {
+	for _, child := range astBlock.Children {
 		childFigure := child.toFigure(x, y)
 		children = append(children, childFigure)
 		_, h := childFigure.size()

@@ -283,6 +283,19 @@ func init() {
 	face = truetype.NewFace(font, &truetype.Options{Size: textHeight})
 }
 
+func DrawBlock(block AstBlock, name string) {
+	blockFigure := block.toFigure(0, 0)
+	w, h := blockFigure.size()
+	canvas := gg.NewContext(w, h)
+	canvas.SetFontFace(face)
+	blockFigure.position(w/2, 0)
+	canvas.SetRGB(0, 0, 0)
+	blockFigure.draw(canvas)
+	blockFigure.drawLines(canvas)
+	canvas.SavePNG(name)
+
+}
+
 // func main() {
 // 	width := 2000
 // 	height := 2000
