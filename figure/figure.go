@@ -208,6 +208,9 @@ func (ifStmt *If) drawLines(canvas *gg.Context) {
 		Arrow(rightX, rightY, canvas)
 	}
 	ifStmt.right.drawLines(canvas)
+	canvas.DrawStringAnchored("1", float64(ifLX-horizontalMargins/2), float64(ifLY-verticalMargins/2), 1, 0)
+	canvas.DrawStringAnchored("0", float64(ifRX+horizontalMargins/2), float64(ifRY-verticalMargins/2), 0, 0)
+
 }
 
 func (block *Block) IsEmpty() bool {
