@@ -54,6 +54,11 @@ func (p *parser) ParseElement() figure.AstElement {
 
 func (p *parser) ParseBlock(level int) figure.AstBlock {
 	children := make([]figure.AstElement, 0)
+	if level == 0 {
+		children = append(children, &figure.AstStartStop{
+			Text: "Begin",
+		})
+	}
 
 	for {
 		children = append(children, p.ParseElement())
@@ -64,6 +69,12 @@ func (p *parser) ParseBlock(level int) figure.AstBlock {
 			p.Return()
 			break
 		}
+	}
+
+	if level == 0 {
+		children = append(children, &figure.AstStartStop{
+			Text: "Stop",
+		})
 	}
 	return figure.AstBlock{
 		Children: children,

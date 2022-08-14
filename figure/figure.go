@@ -1,6 +1,8 @@
 package figure
 
 import (
+	"bytes"
+
 	"github.com/fogleman/gg"
 	"github.com/goki/freetype/truetype"
 	"golang.org/x/image/font"
@@ -22,6 +24,13 @@ type Box struct {
 	text          string
 }
 
+type StartStop struct {
+	x, y          int
+	width, height int
+	text          string
+	radius        float64
+}
+
 type Rhombus struct {
 	x, y, width, height int
 	text                string
@@ -39,12 +48,26 @@ func (box *Box) position(x, y int) {
 	box.x += x
 	box.y += y
 }
+
 func (box *Box) connectTo(x, y int, canvas *gg.Context) {
 	bottom := box.y + box.height
 	canvas.DrawLine(float64(box.x), float64(bottom), float64(x), float64(y))
 	canvas.Stroke()
 }
 func (box *Box) drawLines(canvas *gg.Context) {}
+
+func (startStop *StartStop) connectTo(x, y int, canvas *gg.Context) {
+	bottom := startStop.y + startStop.height
+	canvas.DrawLine(float64(startStop.x), float64(bottom), float64(x), float64(y))
+	canvas.Stroke()
+}
+
+func (startStop *StartStop) drawLines(canvas *gg.Context) {}
+
+func (startStop *StartStop) position(x, y int) {
+	startStop.x += x
+	startStop.y += y
+}
 
 func (rhombus *Rhombus) draw(canvas *gg.Context) {
 	bottomY := rhombus.y + rhombus.height
@@ -59,6 +82,15 @@ func (rhombus *Rhombus) draw(canvas *gg.Context) {
 	middleY_2 := rhombus.height/2 + rhombus.y
 	canvas.DrawStringAnchored(rhombus.text, float64(rhombus.x), float64(middleY_2), 0.5, 0.35)
 }
+
+func (startStop *StartStop) draw(canvas *gg.Context) {
+	x := startStop.x - startStop.width/2
+	canvas.DrawRoundedRectangle(float64(x), float64(startStop.y), float64(startStop.width), float64(startStop.height), startStop.radius)
+	canvas.Stroke()
+	middleY := startStop.height/2 + startStop.y
+	canvas.DrawStringAnchored(startStop.text, float64(startStop.x), float64(middleY), 0.5, 0.35)
+}
+
 func (rhombus *Rhombus) left() (x, y int) {
 	return rhombus.x - rhombus.width/2, rhombus.y + rhombus.height/2
 }
@@ -146,6 +178,14 @@ func (box *Box) top() (int, int) {
 
 func (box *Box) size() (int, int) {
 	return box.width, box.height
+}
+
+func (startStop *StartStop) top() (int, int) {
+	return startStop.x, startStop.y
+}
+
+func (startStop *StartStop) size() (int, int) {
+	return startStop.width, startStop.height
 }
 
 type If struct {
@@ -254,6 +294,19 @@ func newBox(text string, x, y int) Box {
 	}
 }
 
+func newStartStop(text string, x, y int) StartStop {
+	w, h := TextSize(text)
+	r := float64((h + horizontalMargins) / 2)
+	return StartStop{
+		x:      x,
+		y:      y,
+		width:  w + horizontalMargins,
+		height: h + verticalMargins,
+		text:   text,
+		radius: r,
+	}
+}
+
 func TextSize(text string) (width, height int) {
 	d := &font.Drawer{
 		Face: face,
@@ -295,7 +348,7 @@ func init() {
 	face = truetype.NewFace(font, &truetype.Options{Size: textHeight})
 }
 
-func DrawBlock(block AstBlock, name string) {
+func DrawBlock(block AstBlock) []byte {
 	blockFigure := block.toFigure(0, 0)
 	w, h := blockFigure.size()
 	canvas := gg.NewContext(2*w, h)
@@ -304,56 +357,7 @@ func DrawBlock(block AstBlock, name string) {
 	canvas.SetRGB(0, 0, 0)
 	blockFigure.draw(canvas)
 	blockFigure.drawLines(canvas)
-	canvas.SavePNG(name)
-
+	buf := bytes.NewBuffer(nil)
+	canvas.EncodePNG(buf)
+	return buf.Bytes()
 }
-
-// func main() {
-// 	width := 2000
-// 	height := 2000
-// 	font, err := truetype.Parse(goregular.TTF)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-
-// 	face = truetype.NewFace(font, &truetype.Options{Size: textHeight})
-// 	canvas := gg.NewContext(width, height)
-// 	canvas.SetFontFace(face)
-// 	astBlock := AstBlock{
-// 		children: []AstElement{
-// 			&AstBox{"123"},
-// 			&AstIf{text: "xuy_zalupa\nqweqe\nqweqe",
-// 				left: AstBlock{
-// 					children: []AstElement{
-// 						&AstBox{"*"},
-// 						&AstBox{"KISS U"},
-// 					},
-// 				},
-// 				right: AstBlock{
-// 					children: []AstElement{
-// 						&AstBox{"12312312312321"},
-// 						&AstBox{"12321321321312312313123"},
-// 						&AstBox{"QWEQWEQWEQ"},
-// 						&AstIf{text: "<3",
-// 							left: AstBlock{
-// 								children: []AstElement{
-// 									&AstBox{"dfghjkl"},
-// 								},
-// 							},
-// 							right: AstBlock{},
-// 						},
-// 						&AstBox{"iop"},
-// 					},
-// 				},
-// 			},
-
-// 			&AstBox{"uio"},
-// 			&AstBox{"i"},
-// 		},
-// 	}
-// 	b := astBlock.toFigure(500, 250)
-// 	canvas.SetRGB(0, 0, 0)
-// 	b.draw(canvas)
-// 	b.drawLines(canvas)
-// 	canvas.SavePNG("out.png")
-// }

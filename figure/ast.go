@@ -4,6 +4,10 @@ type AstBox struct {
 	Text string
 }
 
+type AstStartStop struct {
+	Text string
+}
+
 type AstIf struct {
 	Left, Right AstBlock
 	Text        string
@@ -20,6 +24,11 @@ type AstElement interface {
 func (astBox *AstBox) toFigure(x, y int) Figure {
 	newB := newBox(astBox.Text, x, y)
 	return &newB
+}
+
+func (astStartStop *AstStartStop) toFigure(x, y int) Figure {
+	newStartStop := newStartStop(astStartStop.Text, x, y)
+	return &newStartStop
 }
 
 func (astIf *AstIf) toFigure(x, y int) Figure {
