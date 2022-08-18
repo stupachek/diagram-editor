@@ -21,20 +21,20 @@ type AstElement interface {
 	toFigure(x, y int) Figure
 }
 
-func (astBox *AstBox) toFigure(x, y int) Figure {
-	newB := newBox(astBox.Text, x, y)
+func (a *AstBox) toFigure(x, y int) Figure {
+	newB := newBox(a.Text, x, y)
 	return &newB
 }
 
-func (astStartStop *AstStartStop) toFigure(x, y int) Figure {
-	newStartStop := newStartStop(astStartStop.Text, x, y)
+func (a *AstStartStop) toFigure(x, y int) Figure {
+	newStartStop := newStartStop(a.Text, x, y)
 	return &newStartStop
 }
 
-func (astIf *AstIf) toFigure(x, y int) Figure {
-	rhombus := newRhombus(astIf.Text, x, y)
-	left := astIf.Left.toFigure(0, 0)
-	right := astIf.Right.toFigure(0, 0)
+func (a *AstIf) toFigure(x, y int) Figure {
+	rhombus := newRhombus(a.Text, x, y)
+	left := a.Left.toFigure(0, 0)
+	right := a.Right.toFigure(0, 0)
 	blockY := y + rhombus.height + blockSpacing
 	widthLeft, _ := left.size()
 	widthRigth, _ := right.size()
@@ -57,10 +57,10 @@ func Max(a, b int) int {
 	}
 }
 
-func (astBlock *AstBlock) toFigure(x, y int) Block {
+func (a *AstBlock) toFigure(x, y int) Block {
 	children := []Figure{}
 	yStart := y
-	for _, child := range astBlock.Children {
+	for _, child := range a.Children {
 		childFigure := child.toFigure(x, y)
 		children = append(children, childFigure)
 		_, h := childFigure.size()

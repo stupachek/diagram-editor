@@ -36,86 +36,86 @@ type Rhombus struct {
 	text                string
 }
 
-func (box *Box) draw(canvas *gg.Context) {
-	x := box.x - box.width/2
-	canvas.DrawRectangle(float64(x), float64(box.y), float64(box.width), float64(box.height))
+func (b *Box) draw(canvas *gg.Context) {
+	x := b.x - b.width/2
+	canvas.DrawRectangle(float64(x), float64(b.y), float64(b.width), float64(b.height))
 	canvas.Stroke()
-	middleY := box.height/2 + box.y
-	canvas.DrawStringAnchored(box.text, float64(box.x), float64(middleY), 0.5, 0.35)
+	middleY := b.height/2 + b.y
+	canvas.DrawStringAnchored(b.text, float64(b.x), float64(middleY), 0.5, 0.35)
 }
 
-func (box *Box) position(x, y int) {
-	box.x += x
-	box.y += y
+func (b *Box) position(x, y int) {
+	b.x += x
+	b.y += y
 }
 
-func (box *Box) connectTo(x, y int, canvas *gg.Context) {
-	bottom := box.y + box.height
-	canvas.DrawLine(float64(box.x), float64(bottom), float64(x), float64(y))
-	canvas.Stroke()
-}
-func (box *Box) drawLines(canvas *gg.Context) {}
-
-func (startStop *StartStop) connectTo(x, y int, canvas *gg.Context) {
-	bottom := startStop.y + startStop.height
-	canvas.DrawLine(float64(startStop.x), float64(bottom), float64(x), float64(y))
+func (b *Box) connectTo(x, y int, canvas *gg.Context) {
+	bottom := b.y + b.height
+	canvas.DrawLine(float64(b.x), float64(bottom), float64(x), float64(y))
 	canvas.Stroke()
 }
+func (b *Box) drawLines(canvas *gg.Context) {}
 
-func (startStop *StartStop) drawLines(canvas *gg.Context) {}
-
-func (startStop *StartStop) position(x, y int) {
-	startStop.x += x
-	startStop.y += y
+func (s *StartStop) connectTo(x, y int, canvas *gg.Context) {
+	bottom := s.y + s.height
+	canvas.DrawLine(float64(s.x), float64(bottom), float64(x), float64(y))
+	canvas.Stroke()
 }
 
-func (rhombus *Rhombus) draw(canvas *gg.Context) {
-	bottomY := rhombus.y + rhombus.height
-	leftX, middleY := rhombus.left()
-	rightX, _ := rhombus.right()
-	canvas.MoveTo(float64(rhombus.x), float64(rhombus.y))
+func (s *StartStop) drawLines(canvas *gg.Context) {}
+
+func (s *StartStop) position(x, y int) {
+	s.x += x
+	s.y += y
+}
+
+func (r *Rhombus) draw(canvas *gg.Context) {
+	bottomY := r.y + r.height
+	leftX, middleY := r.left()
+	rightX, _ := r.right()
+	canvas.MoveTo(float64(r.x), float64(r.y))
 	canvas.LineTo(float64(rightX), float64(middleY))
-	canvas.LineTo(float64(rhombus.x), float64(bottomY))
+	canvas.LineTo(float64(r.x), float64(bottomY))
 	canvas.LineTo(float64(leftX), float64(middleY))
-	canvas.LineTo(float64(rhombus.x), float64(rhombus.y))
+	canvas.LineTo(float64(r.x), float64(r.y))
 	canvas.Stroke()
-	middleY_2 := rhombus.height/2 + rhombus.y
-	canvas.DrawStringAnchored(rhombus.text, float64(rhombus.x), float64(middleY_2), 0.5, 0.35)
+	middleY_2 := r.height/2 + r.y
+	canvas.DrawStringAnchored(r.text, float64(r.x), float64(middleY_2), 0.5, 0.35)
 }
 
-func (startStop *StartStop) draw(canvas *gg.Context) {
-	x := startStop.x - startStop.width/2
-	canvas.DrawRoundedRectangle(float64(x), float64(startStop.y), float64(startStop.width), float64(startStop.height), startStop.radius)
+func (s *StartStop) draw(canvas *gg.Context) {
+	x := s.x - s.width/2
+	canvas.DrawRoundedRectangle(float64(x), float64(s.y), float64(s.width), float64(s.height), s.radius)
 	canvas.Stroke()
-	middleY := startStop.height/2 + startStop.y
-	canvas.DrawStringAnchored(startStop.text, float64(startStop.x), float64(middleY), 0.5, 0.35)
+	middleY := s.height/2 + s.y
+	canvas.DrawStringAnchored(s.text, float64(s.x), float64(middleY), 0.5, 0.35)
 }
 
-func (rhombus *Rhombus) left() (x, y int) {
-	return rhombus.x - rhombus.width/2, rhombus.y + rhombus.height/2
+func (r *Rhombus) left() (x, y int) {
+	return r.x - r.width/2, r.y + r.height/2
 }
-func (rhombus *Rhombus) right() (x, y int) {
-	return rhombus.x + rhombus.width/2, rhombus.y + rhombus.height/2
-}
-
-func (rhombus *Rhombus) position(x, y int) {
-	rhombus.x += x
-	rhombus.y += y
-}
-func (rhoumbus *Rhombus) top() (int, int) {
-	return rhoumbus.x, rhoumbus.y
+func (r *Rhombus) right() (x, y int) {
+	return r.x + r.width/2, r.y + r.height/2
 }
 
-func (roumbus *Rhombus) size() (int, int) {
-	return roumbus.width, roumbus.height
+func (r *Rhombus) position(x, y int) {
+	r.x += x
+	r.y += y
+}
+func (r *Rhombus) top() (int, int) {
+	return r.x, r.y
 }
 
-func (block *Block) position(x, y int) {
-	for _, child := range block.children {
+func (r *Rhombus) size() (int, int) {
+	return r.width, r.height
+}
+
+func (b *Block) position(x, y int) {
+	for _, child := range b.children {
 		child.position(x, y)
 	}
-	block.x += x
-	block.y += y
+	b.x += x
+	b.y += y
 }
 
 type Figure interface {
@@ -132,60 +132,60 @@ type Block struct {
 	x, y     int
 }
 
-func (block *Block) top() (int, int) {
-	return block.x, block.y
+func (b *Block) top() (int, int) {
+	return b.x, b.y
 }
 
-func (block *Block) size() (int, int) {
+func (b *Block) size() (int, int) {
 	width, height := 0, 0
-	for _, child := range block.children {
+	for _, child := range b.children {
 		w, h := child.size()
 		height += h + blockSpacing
 		if w > width {
 			width = w
 		}
 	}
-	if len(block.children) != 0 {
+	if len(b.children) != 0 {
 		height -= blockSpacing
 	}
 	return width, height
 }
-func (block *Block) draw(canvas *gg.Context) {
-	for _, child := range block.children {
+func (b *Block) draw(canvas *gg.Context) {
+	for _, child := range b.children {
 		child.draw(canvas)
 	}
 }
 
-func (block *Block) bottom() (int, int) {
-	topX, topY := block.top()
-	_, h := block.size()
+func (b *Block) bottom() (int, int) {
+	topX, topY := b.top()
+	_, h := b.size()
 	return topX, topY + h
 }
 
-func (block *Block) drawLines(canvas *gg.Context) {
-	for _, child := range block.children {
+func (b *Block) drawLines(canvas *gg.Context) {
+	for _, child := range b.children {
 		child.drawLines(canvas)
 	}
-	for i := 0; i < len(block.children)-1; i++ {
-		x, y := block.children[i+1].top()
-		block.children[i].connectTo(x, y, canvas)
+	for i := 0; i < len(b.children)-1; i++ {
+		x, y := b.children[i+1].top()
+		b.children[i].connectTo(x, y, canvas)
 		Arrow(x, y, canvas)
 	}
 }
-func (box *Box) top() (int, int) {
-	return box.x, box.y
+func (b *Box) top() (int, int) {
+	return b.x, b.y
 }
 
-func (box *Box) size() (int, int) {
-	return box.width, box.height
+func (b *Box) size() (int, int) {
+	return b.width, b.height
 }
 
-func (startStop *StartStop) top() (int, int) {
-	return startStop.x, startStop.y
+func (s *StartStop) top() (int, int) {
+	return s.x, s.y
 }
 
-func (startStop *StartStop) size() (int, int) {
-	return startStop.width, startStop.height
+func (s *StartStop) size() (int, int) {
+	return s.width, s.height
 }
 
 type If struct {
@@ -193,28 +193,28 @@ type If struct {
 	left, right Block
 }
 
-func (ifStmt *If) draw(canvas *gg.Context) {
-	ifStmt.left.draw(canvas)
-	ifStmt.right.draw(canvas)
-	ifStmt.cond.draw(canvas)
+func (i *If) draw(canvas *gg.Context) {
+	i.left.draw(canvas)
+	i.right.draw(canvas)
+	i.cond.draw(canvas)
 
 }
-func (ifStmt *If) top() (int, int) {
-	return ifStmt.cond.top()
+func (i *If) top() (int, int) {
+	return i.cond.top()
 }
 
-func (ifStmt *If) size() (int, int) {
-	_, rhombusHeigth := ifStmt.cond.size()
-	leftWidth, leftHeigth := ifStmt.left.size()
-	rightWidth, rightHeigth := ifStmt.right.size()
+func (i *If) size() (int, int) {
+	_, rhombusHeigth := i.cond.size()
+	leftWidth, leftHeigth := i.left.size()
+	rightWidth, rightHeigth := i.right.size()
 	height := rhombusHeigth + blockSpacing
 	if leftHeigth > rightHeigth {
 		height += leftHeigth
 	} else {
 		height += rightHeigth
 	}
-	leftX, _ := ifStmt.left.top()
-	rightX, _ := ifStmt.right.top()
+	leftX, _ := i.left.top()
+	rightX, _ := i.right.top()
 	width := Abs(leftX-rightX) + leftWidth/2 + rightWidth/2
 	return width, height
 
@@ -227,11 +227,11 @@ func Abs(x int) int {
 	return x
 }
 
-func (ifStmt *If) drawLines(canvas *gg.Context) {
-	ifRX, ifRY := ifStmt.cond.right()
-	ifLX, ifLY := ifStmt.cond.left()
-	leftX, leftY := ifStmt.left.top()
-	rightX, rightY := ifStmt.right.top()
+func (i *If) drawLines(canvas *gg.Context) {
+	ifRX, ifRY := i.cond.right()
+	ifLX, ifLY := i.cond.left()
+	leftX, leftY := i.left.top()
+	rightX, rightY := i.right.top()
 	canvas.DrawLine(float64(ifRX), float64(ifRY), float64(rightX), float64(ifRY))
 	canvas.Stroke()
 	canvas.DrawLine(float64(ifLX), float64(ifLY), float64(leftX), float64(ifLY))
@@ -240,32 +240,32 @@ func (ifStmt *If) drawLines(canvas *gg.Context) {
 	canvas.Stroke()
 	canvas.DrawLine(float64(leftX), float64(ifLY), float64(leftX), float64(leftY))
 	canvas.Stroke()
-	ifStmt.left.drawLines(canvas)
-	if !ifStmt.left.IsEmpty() {
+	i.left.drawLines(canvas)
+	if !i.left.IsEmpty() {
 		Arrow(leftX, leftY, canvas)
 	}
-	if !ifStmt.right.IsEmpty() {
+	if !i.right.IsEmpty() {
 		Arrow(rightX, rightY, canvas)
 	}
-	ifStmt.right.drawLines(canvas)
+	i.right.drawLines(canvas)
 	canvas.DrawStringAnchored("1", float64(ifLX-horizontalMargins/2), float64(ifLY-verticalMargins/2), 1, 0)
 	canvas.DrawStringAnchored("0", float64(ifRX+horizontalMargins/2), float64(ifRY-verticalMargins/2), 0, 0)
 
 }
 
-func (block *Block) IsEmpty() bool {
-	return len(block.children) == 0
+func (b *Block) IsEmpty() bool {
+	return len(b.children) == 0
 }
 
-func (ifStmt *If) position(x int, y int) {
-	ifStmt.cond.position(x, y)
-	ifStmt.left.position(x, y)
-	ifStmt.right.position(x, y)
+func (i *If) position(x int, y int) {
+	i.cond.position(x, y)
+	i.left.position(x, y)
+	i.right.position(x, y)
 }
 
-func (ifStmt *If) connectTo(x, y int, canvas *gg.Context) {
-	leftX, leftY := ifStmt.left.bottom()
-	rightX, rightY := ifStmt.right.bottom()
+func (i *If) connectTo(x, y int, canvas *gg.Context) {
+	leftX, leftY := i.left.bottom()
+	rightX, rightY := i.right.bottom()
 	middleY := 0
 	if leftY > rightY {
 		middleY = (leftY + y) / 2
@@ -278,7 +278,7 @@ func (ifStmt *If) connectTo(x, y int, canvas *gg.Context) {
 	canvas.Stroke()
 	canvas.DrawLine(float64(leftX), float64(middleY), float64(rightX), float64(middleY))
 	canvas.Stroke()
-	ifX, _ := ifStmt.top()
+	ifX, _ := i.top()
 	canvas.DrawLine(float64(ifX), float64(middleY), float64(x), float64(y))
 	canvas.Stroke()
 }
