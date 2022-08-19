@@ -41,10 +41,21 @@ func (p *parser) ParseBox() figure.AstBox {
 
 }
 
+func (p *parser) ParseInput() figure.AstInput {
+	text := strings.TrimPrefix(p.line, "input ")
+	return figure.AstInput{
+		Text: text,
+	}
+
+}
+
 func (p *parser) ParseElement() figure.AstElement {
 	if strings.HasPrefix(p.line, "if ") {
 		ifStmt := p.ParseIf()
 		return &ifStmt
+	} else if strings.HasPrefix(p.line, "input ") {
+		input := p.ParseInput()
+		return &input
 	} else {
 		box := p.ParseBox()
 		return &box

@@ -36,6 +36,27 @@ type Rhombus struct {
 	text                string
 }
 
+type Input struct {
+	x, y, width, height int
+	text                string
+}
+
+func (i *Input) draw(canvas *gg.Context) {
+	x := i.x - i.width/2 + horizontalMargins/2
+	y := i.height + i.y
+	canvas.MoveTo(float64(x), float64(i.y))
+	x2 := i.x + i.width/2
+	canvas.LineTo(float64(x2), float64(i.y))
+	x3 := x2 - horizontalMargins/2
+	canvas.LineTo(float64(x3), float64(y))
+	x4 := x - horizontalMargins/2
+	canvas.LineTo(float64(x4), float64(y))
+	canvas.LineTo(float64(x), float64(i.y))
+	canvas.Stroke()
+	middleY := i.height/2 + i.y
+	canvas.DrawStringAnchored(i.text, float64(i.x), float64(middleY), 0.5, 0.35)
+}
+
 func (b *Box) draw(canvas *gg.Context) {
 	x := b.x - b.width/2
 	canvas.DrawRectangle(float64(x), float64(b.y), float64(b.width), float64(b.height))
@@ -43,6 +64,19 @@ func (b *Box) draw(canvas *gg.Context) {
 	middleY := b.height/2 + b.y
 	canvas.DrawStringAnchored(b.text, float64(b.x), float64(middleY), 0.5, 0.35)
 }
+
+func (i *Input) position(x, y int) {
+	i.x += x
+	i.y += y
+}
+
+func (i *Input) connectTo(x, y int, canvas *gg.Context) {
+	bottom := i.y + i.height
+	canvas.DrawLine(float64(i.x), float64(bottom), float64(x), float64(y))
+	canvas.Stroke()
+}
+
+func (i *Input) drawLines(canvas *gg.Context) {}
 
 func (b *Box) position(x, y int) {
 	b.x += x
@@ -172,6 +206,14 @@ func (b *Block) drawLines(canvas *gg.Context) {
 		Arrow(x, y, canvas)
 	}
 }
+
+func (i *Input) top() (int, int) {
+	return i.x, i.y
+}
+
+func (i *Input) size() (int, int) {
+	return i.width, i.height
+}
 func (b *Box) top() (int, int) {
 	return b.x, b.y
 }
@@ -281,6 +323,17 @@ func (i *If) connectTo(x, y int, canvas *gg.Context) {
 	ifX, _ := i.top()
 	canvas.DrawLine(float64(ifX), float64(middleY), float64(x), float64(y))
 	canvas.Stroke()
+}
+
+func newInput(text string, x, y int) Input {
+	w, h := TextSize(text)
+	return Input{
+		x:      x,
+		y:      y,
+		width:  w + horizontalMargins,
+		height: h + verticalMargins,
+		text:   text,
+	}
 }
 
 func newBox(text string, x, y int) Box {
